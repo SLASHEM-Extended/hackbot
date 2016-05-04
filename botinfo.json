@@ -1,0 +1,42 @@
+{
+    "server": "irc.freenode.net",
+    "port": 6667,
+    "botnick": "hackbot",
+    "masters": [
+        "amybsod",
+        "elronnd",
+        "goldenivy"
+    ],
+    "voiced": [ "prozacelf" ],
+    "chans": [
+        "#em.slashem.me",
+        "#slashem",
+        "#slashemextended"
+    ],
+    
+    "realname": "this is my real name",
+    "ident": "deathbot",
+    "telldict": {},
+    "printingstuff": true,
+
+    "games": [
+        {
+            "shortname": false,
+            "shorttolong": {
+                "7": "S007",
+                "7SL": "SLethe",
+                "8": "S008"
+            },
+            "filepath": "/games/slashem/foo",
+            "xlogfile": false
+        },
+
+        {
+            "shortname": "slex",
+            "filepath": "/slashem/games/slexlogfile",
+            "xlogfile": true
+        }
+    ],
+    "greetings": {
+    }
+}

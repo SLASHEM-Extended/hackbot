@@ -1,0 +1,7 @@
+The Rodney clone (ish) for em.slashem.me.  Largely a work in progress, but it does the job for now.
+
+TODO:
+
+* Migrate from hardcoded values to easily-modifiable JSON (already partially done).
+* Move stuff into modules and import it.
+* Add moar features!!!
