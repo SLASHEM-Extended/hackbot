@@ -300,7 +300,7 @@ def connect():
     send("NICK {}\r\n".format(NICK))
     send("USER {} {} bla :{}\r\n".format(IDENT,HOST,REALNAME))
 
-    sendmsg("IDENTIFY {} {}".format(NICK, input("Requesting password for {} at {}:{}: ".format(NICK, HOST, PORT))))
+    sendmsg("IDENTIFY {} {}".format(NICK, input("Requesting password for {} at {}:{} (echoed): ".format(NICK, HOST, PORT))), "NickServ")
     for i in CHANS:
         joinchan(i)
         waitfornames()
@@ -382,12 +382,12 @@ def parseircinput(ircinput):
     # their nick (lowercase) is in VOICED[]
     if (dictofstuff["connectserver"] == "znc.dank.ninja" or dictofstuff["nick"].lower() in VOICED) and dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
         voice(dictofstuff["nick"], "#em.slashem.me")
-        sendmsg("Welcome, oh master", "#em.slashem.me")
 
     # If they're one of our masters, we gotta do what they say!
     if dictofstuff["nick"].lower() in MASTERS:
         if dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
             op(dictofstuff["nick"], "#em.slashem.me")
+            sendmsg("Welcome, oh master", "#em.slashem.me")
         if list(dictofstuff["msg"])[0] == "!":
             mastercommands(dictofstuff["msg"])
 
