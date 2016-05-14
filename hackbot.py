@@ -66,7 +66,7 @@ printingstuff = True
 # version.version.version points deathdnum(?) deathlev maxlvl curHP maxHP death(?) endtime(YYYYMMDD) starttime(YYYYMMDD) UID role race gen align name,reason "Conduct="...
 def parselogfileline(line):
 #{
-    ver2game = {"7": "S007", "7SL": "SLethe", "8": "S008", "5": "slex"}
+    ver2game = {"7": "S007", "7SL": "SLethe", "8": "S008", "5": "slex", "0": "nh"}
     log = {}
 
     # Split by " " OR ","
@@ -107,85 +107,6 @@ def parselogfileline(line):
 #{
 
 
-
-def processlexline(line,game):
-#{
-    dictofstuff = {}
-    linelist = line.split(',')
-    deathandstuff = linelist[1]
-    deathandstuff = deathandstuff.split("=")
-    reason = deathandstuff[0].split()
-    del reason[-1]
-    dictofstuff['reason'] = ' '.join(reason)
-    line = linelist[0].split()
-    dictofstuff['name'] = line[-1]
-    del line[-1]
-    dictofstuff['align'] = line[-1]
-    del line[-1]
-    dictofstuff['gender'] = line[-1]
-    del line[-1]
-    dictofstuff['race'] = line[-1]
-    del line[-1]
-    dictofstuff['role'] = line[-1]
-    del line[-1]
-    del line[-1]
-    del line[-1]
-    del line[-1]
-    del line[0]
-    dictofstuff['score'] = int(line[0])
-    dictofstuff['hp'] = line[4]
-    dictofstuff['maxhp'] = line[5]
-
-    # Don't want to include startscums
-    if dictofstuff['score'] > 10:
-        # Don't try to parse this.  Really, don't.  It'll get better with
-        # python3.6.  Example, though:
-        # [nh] Elronnd (Val Hum Fem Law), 28843 points, killed by an Angel
-        reason = "[{}] {} ({} {} {} {}), {} points, {}".format(game,dictofstuff['name'], dictofstuff['role'],dictofstuff['race'],dictofstuff['gender'],dictofstuff['align'],dictofstuff['score'],dictofstuff['reason'])
-
-        channels = ["#em.slashem.me", "#slashemextended"]
-        # If it's a slashem game, send it to the slashem channel
-        if game in ("S008", "SLethe", "S007"):
-            channels.append("#slashem")
-        for channel in channels:
-            sendmsg(reason,channel)
-        if printingstuff:
-            print(reason)
-#}
-
-# *sigh*.  Mostly same as above.  At some point I'll merge them
-def processnhline(line):
-#{
-    dictofstuff = {}
-    linelist = line.split(',')
-    reason = linelist[1]
-    dictofstuff['reason'] = reason
-    line = linelist[0].split()
-    dictofstuff['name'] = line[-1]
-    del line[-1]
-    dictofstuff['align'] = line[-1]
-    del line[-1]
-    dictofstuff['gender'] = line[-1]
-    del line[-1]
-    dictofstuff['race'] = line[-1]
-    del line[-1]
-    dictofstuff['role'] = line[-1]
-    del line[-1]
-    del line[-1]
-    del line[-1]
-    del line[-1]
-    del line[0]
-    dictofstuff['score'] = line[0]
-    dictofstuff['hp'] = line[4]
-    dictofstuff['maxhp'] = line[5]
-    if int(dictofstuff['score']) > 10:
-        totalreason = "[nh] {} ({} {} {} {}), {} points, {}".format(dictofstuff['name'], dictofstuff['role'],dictofstuff['race'],dictofstuff['gender'],dictofstuff['align'],dictofstuff['score'],dictofstuff['reason'])
-        if printingstuff:
-            print(totalreason)
-        sendmsg(totalreason,"#em.slashem.me")
-#}
-
-
 def es(number):
 #{
     if number > 1:
@@ -217,7 +138,6 @@ def checkformore():
         if slashemline:
             parselogfileline(slashemline)
         if nhline:
-            processnhline(nhline)
             parselogfileline(nhline)
         if ((not slexline) and (not nhline) and (not slashemline)):
             sleep(.1)
