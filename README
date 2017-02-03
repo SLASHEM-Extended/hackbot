@@ -2,6 +2,4 @@ The Rodney clone (ish) for em.slashem.me.  Largely a work in progress, but it do
 
 TODO:
 
-* Migrate from hardcoded values to easily-modifiable JSON (already partially done).
-* Move stuff into modules and import it.
-* Add moar features!!!
+Write this in an actually good language using a framework; don't write a steaming pile of shit that uses threads for no apparent reason save that I'm a terrible programmer and this sentence is really long I love when I end up in situations like this I can just keep saying shit and popcorn tastes good.
