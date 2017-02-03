@@ -6,7 +6,11 @@ import re
 import socket
 import sys
 import threading
+import random
+import ssl
+import socket
 from time import sleep, time, ctime
+context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
 threaddone = False
 
@@ -26,6 +30,7 @@ serverport = bigdictofstuff["port"]
 nick = bigdictofstuff["botnick"]
 masters = bigdictofstuff["masters"]
 voiced = bigdictofstuff["voiced"]
+autoopped = bigdictofstuff["autoopped"]
 chans = bigdictofstuff["chans"]
 ircrealname = bigdictofstuff["realname"]
 ircident = bigdictofstuff["ident"]
@@ -37,40 +42,64 @@ games = bigdictofstuff["games"]
 
 
 #{
-slexlog = open("/slashem/games/slex-1.6.5/slexdir/logfile", "r")
+slexlog = open("/slashem/games/slex-1.8.6/slexdir/logfile", "r")
 nhlog = open("/slashem/games/nethack/nethackdir/logfile", "r")
 slashemlog = open("/slashem/games/slashemlogfile", "r")
-with open("/slashem/games/slexlogfile", "r") as slex, open("/slashem/games/nethack/nethackdir/logfile", "r") as nh, open("/slashem/games/slashemlogfile") as slashem:
+with open("/slashem/games/slex-1.7.6/slexdir/logfile", "r") as slex, open("/slashem/games/nethack/nethackdir/logfile", "r") as nh, open("/slashem/games/slashemlogfile") as slashem:
     slexlinenums = len(slex.read().split("\n"))
     nhlinenums = len(nh.read().split("\n"))
     slashemlinenums = len(slashem.read().split("\n"))
 
-telldict = {}
 
-MASTERS = ("elronnd", "amybsod", "goldenivy")
-VOICED = ("prozacelf")
-
-HOST, PORT, NICK = "sinisalo.freenode.net", 6667, "strangebot"
+HOST, PORT, NICK = "irc.freenode.net", 6697, "MozillaBot"
 CHANS = ("#em.slashem.me", "#slashem", "#slashemextended")
 
 opped = True
-REALNAME = "this is my real name"
-IDENT = "deathbot"
+REALNAME = "SPEZ SPEZ SPEZ SPEZ"
+IDENT = "cuckbot"
 #}
 PINOQUERIES = ("@?", "@u?", "@v?", "@V?", "@u+?", "@s?", "@g?", "@l?", "@le?", "@lt?", "@b?", "@d?", "!trump", "!potus")
 readbuffer = ""
 printingstuff = True
 
 
+def updateconfigfile():
+#{
+    print("updating configuration file")
+    # local
+    bigdictofstuff = {}
+
+    # All dose are global referenced as read-only
+    bigdictofstuff["server"] = servername
+    bigdictofstuff["port"] = serverport
+    bigdictofstuff["botnick"] = nick
+    bigdictofstuff["masters"] = masters
+    bigdictofstuff["voiced"] = voiced
+    bigdictofstuff["chans"] = chans
+    bigdictofstuff["realname"] = ircrealname
+    bigdictofstuff["ident"] = ircident
+    bigdictofstuff["telldict"] = telldict
+    bigdictofstuff["printingstuff"] = printingstuff
+    bigdictofstuff["greetings"] = usergreetings
+    bigdictofstuff["autoopped"] = autoopped
+
+    bigdictofstuff["games"] = games
+    with open(configfilename, "w") as configfile:
+        json.dump(bigdictofstuff, configfile, sort_keys=True, indent=4)
+    print("done!  configuration is {}".format(bigdictofstuff))
+#}
+
+
 # Slash'EM format is as follows.  NH is the same but without conduct:
 # version.version.version points deathdnum(?) deathlev maxlvl curHP maxHP death(?) endtime(YYYYMMDD) starttime(YYYYMMDD) UID role race gen align name,reason "Conduct="...
 def parselogfileline(line):
 #{
-    ver2game = {"7": "S007", "7SL": "SLethe", "8": "S008", "5": "slex", "0": "nh"}
+    ver2game = {"7": "S007", "7SL": "SLethe", "8": "S008", "6": "slex", "0": "nh"}
     log = {}
 
     # Split by " " OR ","
     line = re.split(r"[, ]+", line)
+    print("line is {}, therefore message is {}".format(line, line[16:]))
     version = line[0].split(".")
     log["version"] = "".join(version)
     log["versionmajor"] = version[0]
@@ -90,7 +119,10 @@ def parselogfileline(line):
     log["gender"] = line[13]
     log["align"] = line[14]
     log["name"] = line[15]
-    log["reason"] = " ".join(line[16:-1])
+    if ver2game[log["patchlevel"]] == "nh":
+        log["reason"] = " ".join(line[16:])
+    else:
+        log["reason"] = " ".join(line[16:-1])
     print("Reason was {}".format(log["reason"]))
     print(log)
     reason = "[{}] {} ({} {} {} {}), {} points, {}".format(ver2game[log["patchlevel"]], log['name'], log['role'],log['race'], log['gender'], log['align'], log['score'], log['reason'])
@@ -216,6 +248,7 @@ def connect():
 #{
     global s
     s = socket.socket()
+    s = context.wrap_socket(s, server_hostname=HOST)
     s.connect((HOST, PORT))
     send("NICK {}\r\n".format(NICK))
     send("USER {} {} bla :{}\r\n".format(IDENT,HOST,REALNAME))
@@ -225,6 +258,7 @@ def connect():
         joinchan(i)
         waitfornames()
     sendmsg("So thou thought I wouldst copy the other robot, fool", "#em.slashem.me")
+#    sendmsg("The DDOSes seem to be over", "#em.slashem.me")
     threading.Thread(target=pingcheck).start()
 #}
 
@@ -243,7 +277,7 @@ def pingcheck():
             send("PONG {}\r\n".format(readbuffer[1]))
             print("PINGPONG")
         else:
-            print("< {}".format(" ".join(readbuffer)))
+            print(u"< {}".format(" ".join(readbuffer)))
             parseircinput(readbuffer)
     s.shutdown(socket.SHUT_RD)
     s.close()
@@ -292,28 +326,43 @@ def parseircinput(ircinput):
     else:
         dictofstuff["msg"] = " | "
     print(dictofstuff)
-    if list(dictofstuff["msg"])[0] == "!":
+
+    if dictofstuff["msg"].lower().find("mozilla") != -1:
+        if random.randrange(2):
+            reply("Mozilla?  Fuck Mozilla!", dictofstuff)
+        else:
+            reply("Long live XUL!", dictofstuff)
+
+    if dictofstuff["msg"][0] == "!":
         handleircinput(dictofstuff)
 
     if dictofstuff["nick"].lower() in telldict and not (dictofstuff["type"] in ("QUIT", "PART", "NICK")):
         handlemsgs(dictofstuff["nick"], dictofstuff["target"])
 
     # They're joining and they're either from the server "znc.dank.ninja" or
-    # their nick (lowercase) is in VOICED[]
-    if (dictofstuff["connectserver"] == "znc.dank.ninja" or dictofstuff["nick"].lower() in VOICED) and dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
+    # their nick (lowercase) is in voiced[]
+    if (dictofstuff["connectserver"] == "znc.dank.ninja" or dictofstuff["nick"].lower() in voiced) and dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
         voice(dictofstuff["nick"], "#em.slashem.me")
 
     # If they're one of our masters, we gotta do what they say!
-    if dictofstuff["nick"].lower() in MASTERS:
+    if dictofstuff["nick"].lower() in masters:
         if dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
             op(dictofstuff["nick"], "#em.slashem.me")
             sendmsg("Welcome, oh master", "#em.slashem.me")
         if list(dictofstuff["msg"])[0] == "!":
             mastercommands(dictofstuff["msg"])
 
+    if dictofstuff["nick"].lower() in autoopped and dictofstuff["type"] == "JOIN" and dictofstuff["target"] == "#em.slashem.me":
+        op(dictofstuff["nick"], "#em.slashem.me")
+
+    if dictofstuff["nick"].lower() in usergreetings and dictofstuff["type"] == "JOIN":
+        reply(usergreetings[dictofstuff["nick"].lower()], dictofstuff)
+    
+
+
     # If their message is in PINOQUERIES[], query pinobot and reply back
     for i in PINOQUERIES:
-        if dictofstuff["msg"].startswith(i) and dictofstuff["target"] == "#em.slashem.me":
+        if dictofstuff["msg"].startswith(i) and dictofstuff["target"] in ("#em.slashem.me", "#ascension.run"):
             sendmsg(dictofstuff["msg"], "Pinobot")
             reply(" ".join(s.recv(2048).decode("UTF-8").strip("\r\n").split()[3:])[1:], dictofstuff)
 #}
@@ -322,6 +371,8 @@ def parseircinput(ircinput):
 def handleircinput(dictofstuff):
 #{
     global telldict
+    global usergreetings
+
     # If, say, the user says "!say foo bar baz", command will be "say" and
     # commandtext will be "foo bar baz"
     command = "".join(list(dictofstuff["msg"].split()[0])[1:])
@@ -332,8 +383,23 @@ def handleircinput(dictofstuff):
     if dictofstuff["nick"].lower() in telldict and not (dictofstuff["type"] in ("QUIT", "PART")) and len(command.split()) > 2:
         handlemsgs(dictofstuff["nick"], dictofstuff["target"])
 
+    if command == "topic":
+        topicset(commandtext, "#em.slashem.me")
     if command == "ping":
         reply("pong!", dictofstuff)
+
+    if commandtext.lower().find("mozilla") != -1:
+        reply("Fuck Mozilla!", dictofstuff)
+
+    if command == "greeting":
+            if commandtext:
+                usergreetings[dictofstuff["nick"].lower()] = commandtext
+                updateconfigfile()
+                reply("Successfully set greeting for {} to \"{}\"".format(dictofstuff["nick"], commandtext), dictofstuff)
+            elif dictofstuff["nick"].lower() in usergreetings and not commandtext:
+                reply("{}: your greeting is currently set to \"{}\"".format(dictofstuff["nick"], usergreetings[dictofstuff["nick"].lower()]), dictofstuff)
+            elif not commandtext:
+                reply("{}: you do not currently have a greeting.  LAME!".format(dictofstuff["nick"]), dictofstuff)
 
     # Use their nick as default for user-queries that if they didn't provide a
     # user
@@ -360,8 +426,8 @@ def handleircinput(dictofstuff):
     elif command == "slexrc":
         reply("I couldn't find that...", dictofstuff)
 
-    if command == "save" and os.path.exists("/slashem/games/slex-1.6.5/slexdir/1003{}".format(commandtext)):
-        reply("{} has a save file, last modified {}.".format(commandtext, " ".join(ctime(os.path.getmtime("/slashem/games/slex-1.6.5/slexdir/1003{}".format(commandtext))).split()[:3])), dictofstuff)
+    if command == "save" and os.path.exists("/slashem/games/slex-1.7.6/slexdir/1003{}".format(commandtext)):
+        reply("{} has a save file, last modified {}.".format(commandtext, " ".join(ctime(os.path.getmtime("/slashem/games/slex-1.7.6/slexdir/1003{}".format(commandtext))).split()[:3])), dictofstuff)
     elif command == "save":
         reply("{} does not have a save file".format(commandtext), dictofstuff)
 
@@ -372,7 +438,7 @@ def handleircinput(dictofstuff):
         tellattime = time()
         if telltonick.lower() != tellfromnick.lower():
             try:
-                f = telldict[telltonick.lower()]
+                telldict[telltonick.lower()]
             except KeyError:
                 telldict[telltonick.lower()] = []
             telldict[telltonick.lower()].append({"fromnick": tellfromnick,
@@ -380,63 +446,97 @@ def handleircinput(dictofstuff):
                                                  "time": int(tellattime)})
             reply("I'll get that, {}.".format(dictofstuff["nick"]), dictofstuff)
             print(telldict)
+            updateconfigfile()
         else:
             reply("{}: tell yourself!".format(dictofstuff["nick"]), dictofstuff)
+
+    elif command == "rng":
+        if commandtext.find("|") != -1:
+            reply("The RNG says: {}".format(random.choice(commandtext.split("|"))), dictofstuff)
+        else:
+            reply(random.choice(commandtext.split()), dictofstuff)
+
+    elif command == "roulette" and dictofstuff["target"] == "#em.slashem.me":
+        gunslot = random.randrange(3)
+        print("gun is at {}".format(gunslot))
+        if gunslot:
+            reply("{}: *click*".format(dictofstuff["nick"]), dictofstuff)
+        else:
+            kick(dictofstuff["nick"], "BANG!", "#em.slashem.me")
 #}
 
 
 def mastercommands(commandtext):
 #{
+    global voiced
+    global autoopped
     # Strip out the leading "!"
     command = "".join(list(commandtext.split()[0].lower())[1:])
     # Strip out the leading !${command}
-    commandtext = " ".join(commandtext.split()[1:])
-    print("Command was {} and text was {}".format(command,commandtext))
+    commandtextstr = " ".join(commandtext.split()[1:])
+    commandtext = commandtextstr.split()
 
-    if command == "topic":
-        topicset(commandtext,"#em.slashem.me")
-    elif command == "kick":
-        kickednick = commandtext.split()[0]
-        reason = " ".join(commandtext.split()[1:])
+    if command == "kick":
+        kickednick = commandtext[0]
+        reason = " ".join(commandtext[1:])
         kick(kickednick, reason, "#em.slashem.me")
     elif command == "ban":
-        for i in commandtext.split():
+        for i in commandtext:
             ban("{}!*@*".format(i), "#em.slashem.me")
 
     elif command == "unban":
-        for i in commandtext.split():
+        for i in commandtext:
             unban("{}!*@*".format(i), "#em.slashem.me")
 
     elif command == "kickban":
-        kick(commandtext.split()[0], commandtext.split()[1:], "#em.slashem.me")
-        ban("{}!*@*".format(commandtext.split()[0]), "#em.slashem.me")
+        kick(commandtext[0], commandtext[1:], "#em.slashem.me")
+        ban("{}!*@*".format(commandtext[0]), "#em.slashem.me")
 
     elif command == "command":
-        print("> {}".format(commandtext))
-        s.send(bytes("{}\r\n".format(commandtext.replace("\\\\", "\\")), "UTF-8"))
+        send(commandtextstr)
     elif command == "op":
-        for i in commandtext.split():
+        for i in commandtext:
             op(i, "#em.slashem.me")
     elif command == "voice":
-        for i in commandtext.split():
+        for i in commandtext:
             voice(i, "#em.slashem.me")
     elif command == "deop":
-        for i in commandtext.split():
+        for i in commandtext:
             deop(i, "#em.slashem.me")
     elif command == "devoice":
-        for i in commandtext.split():
+        for i in commandtext:
             devoice(i, "#em.slashem.me")
+    elif command == "autoop":
+        for i in commandtext:
+            autoopped.append(i)
+        updateconfigfile()
+    elif command == "autovoice":
+        for i in commandtext:
+            voiced.append(i)
+        updateconfigfile()
+    elif command == "deautoop":
+        for i in commandtext:
+            try:
+                del autoopped[autoopped.index(i)]
+            except ValueError:
+                reply("{} is not currently autoopped.  u mad?".format(i), dictofstuff)
+    elif command == "deautovoice":
+        for i in commandtext:
+            try:
+                del voiced[voiced.index(i)]
+            except ValueError:
+                reply("{} is not currently autovoiced.  u mad?".format(i), dictofstuff)
+
     elif command == "rejoin":
         for i in CHANS:
             part(i, False)
             joinchan(i)
             waitfornames()
     elif command == "join":
-        for i in commandtext.split():
+        for i in commandtext:
             joinchan(i)
             waitfornames()
     elif command == "part":
-        commandtext = commandtext.split()
         if commandtext[1:]:
             parttext = " ".join(commandtext[1:])
         else:
@@ -482,13 +582,14 @@ def handlemsgs(tonick, channel):
             sendmsg('\x02{}\x02 said "{}"'.format(i["fromnick"],i["msg"]), channel)
         else:
             sendmsg('{} said "{}"'.format(i["fromnick"],i["msg"]), channel)
+    updateconfigfile()
 #}
 def waitfornames():
 #{
     done = False
     while not done:
         readbuffer = s.recv(2048).decode("UTF-8").strip("\r\n")
-        print("<> {}".format(readbuffer))
+        print(u"<> {}".format(readbuffer))
         if readbuffer.find(":End of /NAMES list.") != -1:
             done = True
             print("Got names")
