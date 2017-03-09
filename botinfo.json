@@ -28,13 +28,15 @@
     "greetings": {
         "amybsod": "\u0016\u00034T\u00039h\u000313e \u00035c\u00038o\u000312l\u000314o\u00034r\u00039s \u00033a\u00037r\u000313e \u00039v\u00034e\u000311r\u000314y\u00030 \u0002\u00036fleecy",
         "amybsod\\std": "\u0016\u00034T\u00039h\u000313e \u00035c\u00038o\u000312l\u000314o\u00034r\u00039s \u00033a\u00037r\u000313e \u00039v\u00034e\u000311r\u000314y\u00030 \u0002\u00036fleecy",
-        "elronnd": "my name is {}",
+        "crawldragon": "We thought our code was standards-compliant... and then the dinosaurs came...",
+        "elronnd": "\", [\"\\[",
         "goldenivy": "You're sexy and you know it ;)",
         "graydot-": "Graydot is a noob",
         "larientelrunya": "Die-Far-ben-sind-sehr-flau-schel-bau-schig!",
         "murrayjames|demi": "Slash'EM Extended is fun to play.",
         "paliculo": "You called down the thunder, well now you've got it!",
-        "prozacelf": "That guy is going to break into your house and kick the shit out of you!"
+        "prozacelf": "That guy is going to break into your house and kick the shit out of you!",
+        "winter_": "\"The white whale hath come\""
     },
     "ident": "deathbot",
     "masters": [
@@ -48,106 +50,11 @@
     "printingstuff": true,
     "realname": "this is my real name",
     "server": "irc.freenode.net",
-    "telldict": {
-        "abybsod": [
-            {
-                "fromnick": "Heliokopis",
-                "msg": "I left it there for you to look at to gather info and possible recover. Thanks for all your good work.",
-                "time": 1471487922
-            }
-        ],
-        "dikkin": [
-            {
-                "fromnick": "LarienTelrunya",
-                "msg": "https://em.slashem.me/userdata/Bluescreen/slex/dumplog/20170108192127.txt",
-                "time": 1483903708
-            }
-        ],
-        "heliokopis": [
-            {
-                "fromnick": "LarienTelrunya",
-                "msg": "You left a killer bones level at Ruggo's that very nearly took out my promising character!",
-                "time": 1476287793
-            }
-        ],
-        "larientelrundya": [
-            {
-                "fromnick": "Paliculo",
-                "msg": "hey can you please make a copy of my save game in case it crashes again? thanks in advance",
-                "time": 1485809250
-            },
-            {
-                "fromnick": "Paliculo",
-                "msg": "n/m Elronnd took care of it thx anyway",
-                "time": 1485817008
-            }
-        ],
-        "makir": [
-            {
-                "fromnick": "LarienTelrunya",
-                "msg": "Christmas comes early this year! ***SLASH'EM EXTENDED 1.8.6*** is on the server!!!",
-                "time": 1482350306
-            }
-        ],
-        "paliculo": [
-            {
-                "fromnick": "LarienTelrunya",
-                "msg": "ah, that's unfortunate; in slex, having a pick-axe is rather important. Hopefully you find one soon!",
-                "time": 1486020860
-            }
-        ],
-        "paliso": [
-            {
-                "fromnick": "Elronnd",
-                "msg": "you start-scummed? For shame!!",
-                "time": 1484256117
-            }
-        ],
-        "philiph": [
-            {
-                "fromnick": "Elronnd",
-                "msg": "ping me (Elronnd) when you're on again and I'll try to debug",
-                "time": 1484700677
-            }
-        ],
-        "wvc": [
-            {
-                "fromnick": "Elronnd",
-                "msg": "what's up?",
-                "time": 1479675491
-            }
-        ],
-        "yasdoria1\\splat": [
-            {
-                "fromnick": "GoldenIvy",
-                "msg": "The magic-absorbing blade tickles the emerald dragon!",
-                "time": 1483821121
-            },
-            {
-                "fromnick": "GoldenIvy",
-                "msg": "The magic-absorbing blade tickles the emerald dragon!",
-                "time": 1483821397
-            },
-            {
-                "fromnick": "LarienTelrunya",
-                "msg": "https://em.slashem.me/userdata/Bluescreen/slex/dumplog/20170108192127.txt",
-                "time": 1483903706
-            },
-            {
-                "fromnick": "GoldenIvy",
-                "msg": "panties: http://i.imgur.com/prP0GWu.png",
-                "time": 1484426775
-            },
-            {
-                "fromnick": "GoldenIvy",
-                "msg": "<Paliculo> twice i've finger-farted my way to walking into the moat",
-                "time": 1485553178
-            }
-        ]
-    },
+    "telldict": {},
     "voiced": [
         "prozacelf",
         "earenndil",
-        "Heliokopis"
+        "Heliokopis",
+        "kerio"
     ]
 }
